@@ -1,0 +1,26 @@
+package:
+  name: scale-compiler
+  version: "0.0+latest"
+
+source:
+  - url: https://pkgs.scale-lang.com/tar/scale-latest-amd64.tar.xz
+
+build:
+  script:
+    - cp -r bin include lib llvm targets cccl $PREFIX/
+    # Fix symlinks to use conda-provided gcc/g++ instead of system paths
+    - find $PREFIX/targets -name "gcc" -type l -exec ln -sf $PREFIX/bin/gcc {} \;
+    - find $PREFIX/targets -name "g++" -type l -exec ln -sf $PREFIX/bin/g++ {} \;
+
+requirements:
+  run:
+    - gcc
+    - gxx
+
+about:
+  homepage: https://scale-lang.com
+  license: LicenseRef-LICENSE.txt
+  summary: "Scale Compiler - A modern, high-performance compiler for the Scale programming language."
+  license_file:
+    - LICENSE.txt
+    - NOTICES.txt

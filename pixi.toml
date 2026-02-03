@@ -1,0 +1,15 @@
+[workspace]
+authors = ["Wolf Vollprecht <w.vollprecht@gmail.com>"]
+channels = ["conda-forge"]
+name = "scale-example"
+platforms = ["linux-64"]
+version = "0.1.0"
+preview = ["pixi-build"]
+
+[tasks]
+build = "cd example && cmake . -B build -G Ninja && ninja -C build"
+
+[dependencies]
+scale-compiler = { path = "./compiler/recipe.yaml" }
+cmake = "*"
+ninja = "*"
