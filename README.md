@@ -34,12 +34,22 @@ maintain.
 
 ```toml
 [feature.nvcc.dependencies]
-cuda-nvcc     = "12.*"          # NVIDIA's compiler
-example-basic = { path = "." }
+cuda-nvcc = "12.*"   # NVIDIA's compiler
+cmake     = "*"
+ninja     = "*"
+
+[feature.nvcc.tasks]
+build     = "cmake -S example -B build/nvcc -G Ninja -DCMAKE_CUDA_ARCHITECTURES=89 && ninja -C build/nvcc"
+benchmark = { cmd = "./build/nvcc/example_basic", depends-on = ["build"] }
 
 [feature.scale.dependencies]
 scale-compiler = { path = "./compiler/recipe.yaml" }   # SCALE from conda
-example-basic  = { path = "." }
+cmake          = "*"
+ninja          = "*"
+
+[feature.scale.tasks]
+build     = "PATH=... CUDACXX=... cmake -S example -B build/scale -G Ninja -DCMAKE_CUDA_ARCHITECTURES=OFF && ninja -C build/scale"
+benchmark = { cmd = "./build/scale/example_basic", depends-on = ["build"] }
 
 [environments]
 nvcc  = { features = ["nvcc"]  }
