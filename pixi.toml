@@ -1,3 +1,10 @@
+# One CUDA codebase — two GPU vendors.
+#
+# `pixi run -e nvcc  benchmark`  → builds & runs on NVIDIA  (via nvcc)
+# `pixi run -e scale benchmark`  → builds & runs on AMD     (via SCALE)
+#
+# Same source (example/example.cu), no HIP port, no code changes.
+
 [workspace]
 authors = ["Wolf Vollprecht <w.vollprecht@gmail.com>"]
 channels = ["conda-forge"]
@@ -6,10 +13,41 @@ platforms = ["linux-64"]
 version = "0.1.0"
 preview = ["pixi-build"]
 
-[tasks]
-build = "cd example && cmake . -B build -G Ninja && ninja -C build"
+# ---------------------------------------------------------------------------
+# SCALE environment  –  AMD GPU target (gfx1100 / RDNA3 by default)
+#
+# SCALE is a drop-in CUDA compiler backed by LLVM/Clang + ROCm.
+# Its conda package ships self-contained per-gfx toolchains; we replicate
+# what `source scaleenv gfx1100` would do at task runtime.
+# Change the target by swapping every occurrence of gfx1100 below.
+# ---------------------------------------------------------------------------
 
-[dependencies]
+[feature.scale.dependencies]
 scale-compiler = { path = "./compiler/recipe.yaml" }
 cmake = "*"
 ninja = "*"
+
+[feature.scale.tasks]
+build     = "PATH=$CONDA_PREFIX/targets/gfx1100/bin:$PATH CUDACXX=$CONDA_PREFIX/targets/gfx1100/bin/nvcc CUDA_PATH=$CONDA_PREFIX/targets/gfx1100 CPATH=$CONDA_PREFIX/targets/gfx1100/include cmake -S example -B build/scale -G Ninja -DCMAKE_CUDA_ARCHITECTURES=OFF && ninja -C build/scale"
+benchmark = { cmd = "./build/scale/example_basic", depends-on = ["build"] }
+
+# ---------------------------------------------------------------------------
+# NVCC environment  –  NVIDIA GPU target (sm_89 / Ada Lovelace by default)
+# ---------------------------------------------------------------------------
+
+[feature.nvcc.dependencies]
+cuda-nvcc = "12.*"
+cmake = "*"
+ninja = "*"
+
+[feature.nvcc.tasks]
+build     = "cmake -S example -B build/nvcc -G Ninja -DCMAKE_CUDA_ARCHITECTURES=89 && ninja -C build/nvcc"
+benchmark = { cmd = "./build/nvcc/example_basic", depends-on = ["build"] }
+
+# ---------------------------------------------------------------------------
+# Environments
+# ---------------------------------------------------------------------------
+
+[environments]
+scale = { features = ["scale"] }
+nvcc  = { features = ["nvcc"] }
