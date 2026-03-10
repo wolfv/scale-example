@@ -91,25 +91,6 @@ Change the default GPU target by editing the architecture flag in `pixi.toml`:
 | `nvcc`  | `CMAKE_CUDA_ARCHITECTURES` | `86` (Ampere), `89` (Ada), `90` (Hopper) |
 | `scale` | target path in `build` task | `gfx1100` (RDNA3), `gfx942` (MI300X), `gfx908` (MI100) |
 
----
-
-## Example results
-
-> Tested on an **AMD Radeon RX 7900 XTX** (SCALE / gfx1100) and an
-> **NVIDIA RTX 4090** (NVCC / sm_89).  Ubuntu 22.04.
-
-| | AMD RX 7900 XTX<br>_compiled with SCALE_ | NVIDIA RTX 4090<br>_compiled with NVCC_ |
-|---|:---:|:---:|
-| Avg kernel time | 0.41 ms | 0.38 ms |
-| Effective BW | 784 GB/s | 843 GB/s |
-| Peak BW (theoretical) | 960 GB/s | 1008 GB/s |
-| BW utilisation | 81.7 % | 83.6 % |
-
-Both compilers reach **~82–84 % of peak bandwidth** on their respective
-hardware.  The same source, the same build system, just a different
-`pixi run -e` flag.
-
----
 
 ## Repository layout
 
@@ -137,21 +118,3 @@ CUDA, adding AMD support is now a matter of:
 1. Adding `scale-compiler` as a conda dependency
 2. Setting `CUDACXX` to Scale's nvcc for AMD builds
 3. Shipping a second binary compiled for `gfx*`
-
-Same source.  No new language.  No new test suite.
-
----
-
-## About SCALE
-
-[SCALE](https://scale-lang.com) is developed by Codeplay Software.
-It uses LLVM's Clang frontend and a HIP/ROCm backend to compile standard
-CUDA C++ for AMD GPUs.  The conda package (`compiler/recipe.yaml`) downloads
-the official tarball from `pkgs.scale-lang.com` and rewires the GCC symlinks
-so it works correctly inside a pixi environment.
-
----
-
-## License
-
-MIT
